@@ -87,7 +87,6 @@ def generate_average_temperatures_json(files_path, file_name, destination_path):
 
                 i = i + 1
 
-    print(return_json['days'][160])
     no_cities = json_files.__len__() + 1  # +1 cuz i removed one city at the beginning
     for day in return_json['days']:
         day['maxTempC'] = int(day['maxTempC']) / no_cities
@@ -96,19 +95,41 @@ def generate_average_temperatures_json(files_path, file_name, destination_path):
         for hour in hours:
             hour['tempC'] = int(hour['tempC']) / no_cities
             hour['FeelsLikeC'] = int(hour['FeelsLikeC']) / no_cities
-    print(return_json['days'][160])
+    write_to_json_file(destination_path, file_name, return_json)
+
+
+def generate_max_temperatures_json(files_path, file_name, destination_path):
+    json_files = glob.glob(files_path + '*.json')
+    return_json = {}
+    max_max_temp_c = 0
+    max_feels_like_c = 0
+    for json_file in json_files:
+        with open(json_file) as json_data:
+            current_json = json.load(json_data)
+            days = current_json['days']
+            for day in days:
+                if int(day['maxTempC']) > max_max_temp_c:
+                    max_max_temp_c = int(day['maxTempC'])
+                hours = day['hours']
+                for hour in hours:
+                    if int(hour['FeelsLikeC']) > max_feels_like_c:
+                        max_feels_like_c = int(hour['FeelsLikeC'])
+    return_json['maxTempC'] = max_max_temp_c
+    return_json['maxFeelsLikeC'] = max_feels_like_c
     write_to_json_file(destination_path, file_name, return_json)
 
 
 cities = ['Bialystok', 'Bydgoszcz', 'Cracow', 'Gdańsk', 'Katowice', 'Lodz', 'Lublin', 'Poznan', 'Szczecin', 'Warsaw',
           'Wroclaw']
 
-city_json_destination_path = '../resources/cities temperature/'
+city_json_destination_path = '../../resources/cities temperature/'
 
 for city in cities:
     generate_city_temperatures_json(city, '2013-01-01', '2017-12-31', city_json_destination_path)
 
 cities_files_path = city_json_destination_path
-average_temperatures_destination_path = '../resources'
+average_temperatures_destination_path = '../../resources'
 
 generate_average_temperatures_json(cities_files_path, 'Average temperatures', average_temperatures_destination_path)
+
+generate_max_temperatures_json(cities_files_path, 'Max temperatures', average_temperatures_destination_path)
